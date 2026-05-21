@@ -109,6 +109,19 @@ php artisan mailweb:prune 50
 
 If no count is provided, it uses the `MAILWEB_LIMIT` config value.
 
+## Excluding Notifications and Mailables
+
+Some emails are noisy or sensitive enough that you don't want them turning up in MailWeb. Password reset links are the obvious one. Add the fully-qualified class name of any Notification or Mailable you want skipped to `MAILWEB_BLACKLIST` in `config/MailWeb.php`:
+
+```php
+'MAILWEB_BLACKLIST' => [
+    \Illuminate\Auth\Notifications\ResetPassword::class,
+    \App\Notifications\TwoFactorCodeNotification::class,
+],
+```
+
+Matching is exact, so subclasses of a listed class aren't filtered automatically — list each one you want excluded. Blacklisted emails are still sent normally, they just don't get stored or shown in the dashboard.
+
 ## Dashboard Features
 
 - **Search** across subject and body content
