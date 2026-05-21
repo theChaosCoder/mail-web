@@ -2,6 +2,7 @@
 
 namespace Appoly\MailWeb\Http\Listeners;
 
+use Illuminate\Mail\Mailable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\Mime\Part\DataPart;
@@ -16,6 +17,10 @@ class MailWebListener
     public function handle(MessageSending $event): void
     {
         if (! config('MailWeb.MAILWEB_ENABLED')) {
+            return;
+        }
+
+        if ($this->isBlacklisted($event)) {
             return;
         }
 
@@ -72,5 +77,37 @@ class MailWebListener
             'address' => $address->getAddress(),
             'name' => $address->getName(),
         ])->toArray();
+    }
+
+    private function isBlacklisted(MessageSending $event): bool
+    {
+        $blacklist = config('MailWeb.MAILWEB_BLACKLIST', []);
+
+        if (empty($blacklist)) {
+            return false;
+        }
+
+        $notification = $event->data['__laravel_notification'] ?? null;
+        if (is_string($notification) && in_array($notification, $blacklist, true)) {
+            return true;
+        }
+
+        $mailable = $this->findMailableInCallStack();
+        if ($mailable !== null && in_array($mailable::class, $blacklist, true)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function findMailableInCallStack(): ?Mailable
+    {
+        foreach (debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT) as $frame) {
+            if (isset($frame['object']) && $frame['object'] instanceof Mailable) {
+                return $frame['object'];
+            }
+        }
+
+        return null;
     }
 }

@@ -23,4 +23,15 @@ return [
         'DISK' => env('MAILWEB_ATTACHMENTS_DISK'),
         'PATH' => env('MAILWEB_ATTACHMENTS_PATH', 'mailweb/attachments'),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Blacklist
+    |--------------------------------------------------------------------------
+    |
+    | Fully-qualified Notification or Mailable class names listed here will
+    | be skipped — their emails will not be stored by MailWeb.
+    |
+    */
+    'MAILWEB_BLACKLIST' => [],
 ];
